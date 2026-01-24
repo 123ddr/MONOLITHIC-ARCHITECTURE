@@ -2,9 +2,11 @@ package com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
+@Data
 @Entity
 @Table(name = "categories")
 public class CategoryEntity {
