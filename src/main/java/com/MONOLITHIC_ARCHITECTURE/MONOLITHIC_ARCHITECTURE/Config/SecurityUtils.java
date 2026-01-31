@@ -24,4 +24,5 @@ public class SecurityUtils {
 
         return principal.toString();
     }
+
 }
