@@ -22,5 +22,9 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<OrderEntity> orders;
+
+    public Long getUserId() {
+        return this.id;
+    }
 }
 

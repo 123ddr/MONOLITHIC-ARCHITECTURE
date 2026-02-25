@@ -2,9 +2,11 @@ package com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "payments")
+@Data
 public class PaymentEntity {
 
     @Id
