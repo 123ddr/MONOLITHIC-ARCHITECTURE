@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface IOrderItemService {
 
-    OrderItemResponse createOrderItem(OrderItemCreateRequest request); // CUSTOMER
+    public OrderItemResponse createOrderItem(Long orderId, OrderItemCreateRequest request);// CUSTOMER
 
     List<OrderItemResponse> getOrderItems(Long orderId);               // ADMIN
 }

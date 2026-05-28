@@ -34,9 +34,9 @@ public class OrderItemServiceImpl implements IOrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse createOrderItem(OrderItemCreateRequest request) {
+    public OrderItemResponse createOrderItem(Long orderId, OrderItemCreateRequest request) {
 
-        OrderEntity order = orderRepo.findById(request.getOrderId())
+        OrderEntity order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("ORDER NOT FOUND"));
 
         ProductEntity product = productRepo.findById(request.getProductId())
@@ -46,12 +46,13 @@ public class OrderItemServiceImpl implements IOrderItemService {
         item.setOrder(order);
         item.setProduct(product);
         item.setQuantity(request.getQuantity());
-        item.setPrice(product.getPrice() * request.getQuantity());
+
+        double lineTotal = product.getPrice() * request.getQuantity();
+        item.setPrice(lineTotal);
 
         orderItemRepo.save(item);
 
-        // update order total
-        order.setTotal(order.getTotal() + item.getPrice());
+        order.setTotal(order.getTotal() + lineTotal);
         orderRepo.save(order);
 
         return toResponse(item);

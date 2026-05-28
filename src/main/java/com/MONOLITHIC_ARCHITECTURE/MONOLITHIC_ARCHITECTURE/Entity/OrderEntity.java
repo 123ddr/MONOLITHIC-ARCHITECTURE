@@ -4,6 +4,7 @@ package com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,6 +24,6 @@ public class OrderEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItemEntity> items;
+    private List<OrderItemEntity> items = new ArrayList<>();
 }
 

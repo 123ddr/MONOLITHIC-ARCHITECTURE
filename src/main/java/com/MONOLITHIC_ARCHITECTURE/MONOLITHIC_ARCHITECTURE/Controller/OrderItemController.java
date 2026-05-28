@@ -25,18 +25,24 @@ public class OrderItemController {
     /**
      * Create order item (CUSTOMER)
      */
-    @PostMapping
+    @PostMapping("/{orderId}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<Response> create(@RequestBody OrderItemCreateRequest request) {
+    public ResponseEntity<Response> create(
+            @PathVariable Long orderId,
+            @RequestBody OrderItemCreateRequest request) {
+
         try {
-            OrderItemResponse item = orderItemService.createOrderItem(request);
+            OrderItemResponse item = orderItemService.createOrderItem(orderId, request);
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(Response.success(HttpStatus.CREATED, item));
+
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Response.error(HttpStatus.INTERNAL_SERVER_ERROR, "ORDER_ITEM_CREATION_FAILED : " + e.getMessage()));
+                    .body(Response.error(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "ORDER_ITEM_CREATION_FAILED : " + e.getMessage()));
         }
     }
 

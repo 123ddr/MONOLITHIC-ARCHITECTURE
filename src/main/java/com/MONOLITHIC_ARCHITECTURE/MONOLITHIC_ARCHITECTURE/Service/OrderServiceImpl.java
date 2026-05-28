@@ -2,10 +2,15 @@ package com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Service;
 
 
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Config.SecurityUtils;
+import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.DTO.OrderCreateRequest;
+import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.DTO.OrderItemCreateRequest;
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.DTO.OrderResponse;
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity.OrderEntity;
+import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity.OrderItemEntity;
+import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity.ProductEntity;
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Entity.UserEntity;
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Repository.OrderRepo;
+import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Repository.ProductRepo;
 import com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Repository.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -19,20 +24,22 @@ public class OrderServiceImpl implements IOrderService {
 
     private final OrderRepo orderRepo;
     private final UserRepo userRepo;
+    private final ProductRepo productRepo;
     //private final SecurityUtils securityUtils;
 
     @Autowired
     public OrderServiceImpl(OrderRepo orderRepo,
                             UserRepo userRepo,
-                            SecurityUtils securityUtils) {
+                            SecurityUtils securityUtils, ProductRepo productRepo) {
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
         //this.securityUtils = securityUtils;
+        this.productRepo = productRepo;
     }
 
     @Override
     @Transactional
-    public OrderResponse createOrder() {
+    public OrderResponse createOrder(OrderCreateRequest request) {
 
         String username = SecurityUtils.getCurrentUsername();
 
@@ -42,7 +49,29 @@ public class OrderServiceImpl implements IOrderService {
         OrderEntity order = new OrderEntity();
         order.setUser(user);
         order.setStatus("CREATED");
-        order.setTotal(0.0);
+
+        double total = 0.0;
+
+        for (OrderItemCreateRequest itemReq : request.getItems()) {
+
+            ProductEntity product = productRepo.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new EntityNotFoundException("PRODUCT NOT FOUND"));
+
+            double price = product.getPrice();
+            double lineTotal = price * itemReq.getQuantity();
+
+            total += lineTotal;
+
+            OrderItemEntity item = new OrderItemEntity();
+            item.setOrder(order);
+            item.setProduct(product);
+            item.setQuantity(itemReq.getQuantity());
+            item.setPrice(price);
+
+            order.getItems().add(item);
+        }
+
+        order.setTotal(total);
 
         orderRepo.save(order);
 

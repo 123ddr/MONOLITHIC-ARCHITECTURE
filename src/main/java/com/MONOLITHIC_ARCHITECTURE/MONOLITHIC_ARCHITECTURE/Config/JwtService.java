@@ -4,6 +4,7 @@ package com.MONOLITHIC_ARCHITECTURE.MONOLITHIC_ARCHITECTURE.Config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,8 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "your_secret_key_here_very_long";
+    private final String SECRET_KEY =
+            "my-super-secret-key-for-jwt-authentication-1234567890";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -27,7 +29,7 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY.getBytes())
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -38,8 +40,8 @@ public class JwtService {
                 .setClaims(new HashMap<>())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
 

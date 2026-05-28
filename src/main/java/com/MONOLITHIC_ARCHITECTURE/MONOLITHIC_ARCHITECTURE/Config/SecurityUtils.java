@@ -15,13 +15,15 @@ public class SecurityUtils {
     // Get the currently logged-in username
     public static String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
+
+        if (authentication == null) {
+            throw new RuntimeException("No authentication found");
         }
 
         Object principal = authentication.getPrincipal();
-        if (principal instanceof UserEntity user) { // your custom entity
-            return user.getUsername();
+
+        if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
         }
 
         return principal.toString();
@@ -29,14 +31,32 @@ public class SecurityUtils {
 
     // Get the currently logged-in UserEntity
     public static UserEntity getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")) {
             return null;
         }
 
         Object principal = authentication.getPrincipal();
-        if (principal instanceof UserEntity user) { // make sure UserEntity is stored in Authentication
-            return user;
+
+        if (principal instanceof UserDetails userDetails) {
+
+            UserEntity user = new UserEntity();
+
+            user.setEmail(userDetails.getUsername());
+            user.setRole(
+                    userDetails.getAuthorities()
+                            .stream()
+                            .findFirst()
+                            .map(a -> a.getAuthority().replace("ROLE_", ""))
+                            .orElse(null)
+            );
+
+            return user; // ONLY partial object
         }
 
         return null;
